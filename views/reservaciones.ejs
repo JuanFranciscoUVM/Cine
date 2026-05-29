@@ -1,0 +1,103 @@
+<%- include('partials/header') %>
+
+<div class="card">
+  <h2>Crear Reservación</h2>
+  <form onsubmit="crear(event)">
+    <div class="form-group">
+      <label>Cliente</label>
+      <input type="text" id="cliente" required>
+    </div>
+    <div class="form-group">
+      <label>Función</label>
+      <select id="funcionId" required>
+        <% funciones.forEach(function(f) { %>
+          <option value="<%= f.id %>"><%= f.tituloPelicula %> - <%= !isNaN(new Date(f.fecha)) ? new Date(f.fecha).toLocaleString() : 'Fecha Inválida' %></option>
+        <% }); %>
+      </select>
+    </div>
+    <button type="submit" class="btn"><i class="fa-solid fa-ticket"></i> Reservar</button>
+  </form>
+</div>
+
+<div class="card" style="margin-bottom: 2rem;">
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+    <h2>Todas las Reservaciones</h2>
+    <button class="btn btn-danger" onclick="verUltimas()" style="background:#4f46e5;"><i class="fa-solid fa-clock"></i> Ver Últimas 5</button>
+  </div>
+  <table>
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Cliente</th>
+        <th>Película</th>
+        <th>Fecha Función</th>
+        <th>Fecha Reserva</th>
+        <th>Acciones</th>
+      </tr>
+    </thead>
+    <tbody id="resList">
+      <% reservaciones.forEach(function(r) { %>
+        <tr>
+          <td><%= r.id %></td>
+          <td><strong><%= r.cliente %></strong></td>
+          <td><%= r.pelicula %></td>
+          <td><%= r.fecha && !isNaN(new Date(r.fecha)) ? new Date(r.fecha).toLocaleString() : 'Fecha Inválida' %></td>
+          <td><%= new Date(r.createdAt).toLocaleString() %></td>
+          <td>
+            <button class="btn btn-danger" onclick="eliminar('<%= r.id %>')"><i class="fa-solid fa-trash"></i></button>
+          </td>
+        </tr>
+      <% }); %>
+    </tbody>
+  </table>
+</div>
+
+<script>
+async function crear(e) {
+  e.preventDefault();
+  const body = {
+    cliente: document.getElementById('cliente').value,
+    funcionId: document.getElementById('funcionId').value
+  };
+  await apiRequest('/api/reservaciones', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body)
+  });
+}
+
+async function eliminar(id) {
+  if(confirm('¿Eliminar esta reservación?')) {
+    await apiRequest('/api/reservaciones/' + id, { method: 'DELETE' });
+  }
+}
+
+async function verUltimas() {
+  try {
+    const res = await fetch('/api/reservaciones/ultimas');
+    const data = await res.json();
+    
+    // Clear list and re-render only the lasts
+    const tbody = document.getElementById('resList');
+    tbody.innerHTML = '';
+    
+    data.forEach(r => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${r.id}</td>
+        <td><strong>${r.cliente}</strong></td>
+        <td colspan="2"><span style="color:#94a3b8;font-size:0.85rem"><i>Filtro de últimas activo (IDs)</i></span></td>
+        <td>${new Date(r.createdAt).toLocaleString()}</td>
+        <td>
+          <button class="btn btn-danger" onclick="eliminar('${r.id}')"><i class="fa-solid fa-trash"></i></button>
+        </td>
+      `;
+      tbody.appendChild(tr);
+    });
+  } catch(e) {
+    alert(e.message);
+  }
+}
+</script>
+
+<%- include('partials/footer') %>

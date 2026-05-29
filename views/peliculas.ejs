@@ -1,0 +1,72 @@
+<%- include('partials/header') %>
+
+<div class="card">
+  <h2>Ingresar Nueva Película</h2>
+  <form id="formPeliculas" onsubmit="crear(event)">
+    <div class="form-group">
+      <label>Título</label>
+      <input type="text" id="titulo" required>
+    </div>
+    <div class="form-group">
+      <label>Director</label>
+      <input type="text" id="director" required>
+    </div>
+    <div class="form-group">
+      <label>Año</label>
+      <input type="number" id="anio" required>
+    </div>
+    <button type="submit" class="btn"><i class="fa-solid fa-plus"></i> Añadir Película</button>
+  </form>
+</div>
+
+<div class="card">
+  <h2>Catálogo de Películas</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Título</th>
+        <th>Director</th>
+        <th>Año</th>
+        <th>Acciones</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% peliculas.forEach(function(pel) { %>
+        <tr>
+          <td><%= pel.id %></td>
+          <td><strong><%= pel.titulo %></strong></td>
+          <td><%= pel.director %></td>
+          <td><%= pel.anio %></td>
+          <td>
+            <button class="btn btn-danger" onclick="eliminar('<%= pel.id %>')"><i class="fa-solid fa-trash"></i></button>
+          </td>
+        </tr>
+      <% }); %>
+    </tbody>
+  </table>
+</div>
+
+<script>
+async function crear(e) {
+  e.preventDefault();
+  const body = {
+    titulo: document.getElementById('titulo').value,
+    director: document.getElementById('director').value,
+    anio: parseInt(document.getElementById('anio').value)
+  };
+  await apiRequest('/api/peliculas', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body)
+  });
+}
+
+async function eliminar(id) {
+  if(confirm('¿Eliminar esta película?')) {
+    await apiRequest('/api/peliculas/' + id, { method: 'DELETE' });
+  }
+}
+</script>
+
+<%- include('partials/footer') %>

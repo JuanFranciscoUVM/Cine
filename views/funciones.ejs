@@ -1,0 +1,112 @@
+<%- include('partials/header') %>
+
+<div class="card">
+  <h2>Programar Función</h2>
+  <form onsubmit="crear(event)">
+    <div class="form-group">
+      <label>Película</label>
+      <select id="peliculaId" required>
+        <% peliculas.forEach(function(pel) { %>
+          <option value="<%= pel.id %>"><%= pel.titulo %></option>
+        <% }); %>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Sala</label>
+      <select id="salaId" required>
+        <% salas.forEach(function(s) { %>
+          <option value="<%= s.id %>"><%= s.nombre %></option>
+        <% }); %>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Fecha y Hora</label>
+      <input type="datetime-local" id="fecha" max="2099-12-31T23:59" required>
+    </div>
+    <button type="submit" class="btn"><i class="fa-solid fa-calendar-plus"></i> Añadir Función</button>
+  </form>
+</div>
+
+<div class="card" style="margin-bottom: 2rem;">
+  <h2>Filtro de Funciones por Fecha</h2>
+  <div style="display:flex; gap: 1rem; align-items: flex-end;">
+    <div class="form-group" style="margin-bottom: 0;">
+      <label>Inicio</label>
+      <input type="date" id="fechaInicio">
+    </div>
+    <div class="form-group" style="margin-bottom: 0;">
+      <label>Fin</label>
+      <input type="date" id="fechaFin">
+    </div>
+    <button class="btn" onclick="filtrar()">Filtrar</button>
+  </div>
+  <div id="filterResult" style="margin-top: 1rem;"></div>
+</div>
+
+<div class="card">
+  <h2>Funciones Programadas</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Película</th>
+        <th>Sala</th>
+        <th>Fecha</th>
+        <th>Acciones</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% funciones.forEach(function(f) { %>
+        <tr>
+          <td><%= f.id %></td>
+          <td><strong><%= f.pelicula %></strong></td>
+          <td><%= f.sala %></td>
+          <td><%= !isNaN(new Date(f.fecha)) ? new Date(f.fecha).toLocaleString() : 'Fecha Inválida' %></td>
+          <td>
+            <% if(f.peliculaId) { %>
+              <button class="btn btn-danger" onclick="quitarPelicula('<%= f.id %>')" title="Quitar película (Romper relación)"><i class="fa-solid fa-unlink"></i></button>
+            <% } %>
+          </td>
+        </tr>
+      <% }); %>
+    </tbody>
+  </table>
+</div>
+
+<script>
+async function crear(e) {
+  e.preventDefault();
+  const body = {
+    peliculaId: document.getElementById('peliculaId').value,
+    salaId: document.getElementById('salaId').value,
+    fecha: document.getElementById('fecha').value
+  };
+  await apiRequest('/api/funciones', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body)
+  });
+}
+
+async function quitarPelicula(id) {
+  if(confirm('¿Eliminar la relación con la película?')) {
+    await apiRequest('/api/funciones/' + id + '/pelicula', { method: 'DELETE' });
+  }
+}
+
+async function filtrar() {
+  const ini = document.getElementById('fechaInicio').value;
+  const fin = document.getElementById('fechaFin').value;
+  if(!ini || !fin) return alert('Selecciona ambas fechas');
+  
+  try {
+    const res = await fetch(`/api/funciones/fechas?inicio=${ini}&fin=${fin}`);
+    const data = await res.json();
+    document.getElementById('filterResult').innerHTML = `Se encontraron <strong>${data.length}</strong> funciones en ese rango.`;
+  } catch(e) {
+    alert(e.message);
+  }
+}
+</script>
+
+<%- include('partials/footer') %>
