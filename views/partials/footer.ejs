@@ -1,1 +1,17 @@
-
+      </div> <!-- end content-wrapper -->
+    </main>
+  </div> <!-- end dashboard-container -->
+  <script>
+    // Utils to handle standard API responses
+    async function apiRequest(url, options = {}) {
+      try {
+        const response = await fetch(url, options);
+        if(!response.ok) throw new Error('Request error');
+        location.reload();
+      } catch (err) {
+        alert(err.message);
+      }
+    }
+  </script>
+</body>
+</html>
