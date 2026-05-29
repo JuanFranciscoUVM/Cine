@@ -1,1 +1,51 @@
-
+{
+  "peliculas": [
+    {
+      "id": "80cz1t8ij",
+      "titulo": "Planeta de los simios",
+      "director": "RAMON VALDEZ",
+      "anio": 1968
+    },
+    {
+      "id": "pjefre4wi",
+      "titulo": "Titanic",
+      "director": "Juan",
+      "anio": 2001
+    },
+    {
+      "id": "d1ufxekc5",
+      "titulo": "Fronzen",
+      "director": "RAMON VALDEZ",
+      "anio": 1968
+    }
+  ],
+  "salas": [
+    {
+      "id": "v9enmtnk8",
+      "nombre": "1",
+      "capacidad": 120
+    }
+  ],
+  "funciones": [
+    {
+      "id": "dgvqid221",
+      "peliculaId": null,
+      "salaId": "v9enmtnk8",
+      "fecha": "2024-02-20T14:02"
+    },
+    {
+      "id": "tg1gr6976",
+      "peliculaId": null,
+      "salaId": "v9enmtnk8",
+      "fecha": "2024-02-20T14:04"
+    },
+    {
+      "id": "06o082zr9",
+      "peliculaId": null,
+      "salaId": "v9enmtnk8",
+      "fecha": "0202-02-20T14:02"
+    }
+  ],
+  "tickets": [],
+  "reservaciones": []
+}
