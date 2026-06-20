@@ -15,6 +15,10 @@
       <label>Año</label>
       <input type="number" id="anio" required>
     </div>
+    <div class="form-group">
+      <label>Género</label>
+      <input type="text" id="genero" required>
+    </div>
     <button type="submit" class="btn"><i class="fa-solid fa-plus"></i> Añadir Película</button>
   </form>
 </div>
@@ -28,6 +32,7 @@
         <th>Título</th>
         <th>Director</th>
         <th>Año</th>
+        <th>Género</th>
         <th>Acciones</th>
       </tr>
     </thead>
@@ -38,7 +43,9 @@
           <td><strong><%= pel.titulo %></strong></td>
           <td><%= pel.director %></td>
           <td><%= pel.anio %></td>
+          <td><%= pel.genero %></td>
           <td>
+            <button class="btn btn-primary" onclick="abrirEditar('<%= pel.id %>', '<%= pel.titulo %>', '<%= pel.director %>', '<%= pel.anio %>', '<%= pel.genero %>')"><i class="fa-solid fa-edit"></i></button>
             <button class="btn btn-danger" onclick="eliminar('<%= pel.id %>')"><i class="fa-solid fa-trash"></i></button>
           </td>
         </tr>
@@ -47,16 +54,68 @@
   </table>
 </div>
 
+<!-- Simple Edit Modal / Div -->
+<div id="editModal" class="card" style="display:none; position:fixed; top:20%; left:30%; width:40%; z-index:100; box-shadow: 0 5px 15px rgba(0,0,0,0.5);">
+  <h2>Editar Película</h2>
+  <form id="formEditarPelicula" onsubmit="actualizar(event)">
+    <input type="hidden" id="edit-id">
+    <div class="form-group">
+      <label>Título</label>
+      <input type="text" id="edit-titulo" required>
+    </div>
+    <div class="form-group">
+      <label>Director</label>
+      <input type="text" id="edit-director" required>
+    </div>
+    <div class="form-group">
+      <label>Año</label>
+      <input type="number" id="edit-anio" required>
+    </div>
+    <div class="form-group">
+      <label>Género</label>
+      <input type="text" id="edit-genero" required>
+    </div>
+    <button type="submit" class="btn"><i class="fa-solid fa-save"></i> Guardar</button>
+    <button type="button" class="btn btn-danger" onclick="document.getElementById('editModal').style.display='none'">Cancelar</button>
+  </form>
+</div>
+
 <script>
 async function crear(e) {
   e.preventDefault();
   const body = {
     titulo: document.getElementById('titulo').value,
     director: document.getElementById('director').value,
-    anio: parseInt(document.getElementById('anio').value)
+    anio: parseInt(document.getElementById('anio').value),
+    genero: document.getElementById('genero').value
   };
   await apiRequest('/api/peliculas', {
     method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body)
+  });
+}
+
+function abrirEditar(id, titulo, director, anio, genero) {
+  document.getElementById('edit-id').value = id;
+  document.getElementById('edit-titulo').value = titulo;
+  document.getElementById('edit-director').value = director;
+  document.getElementById('edit-anio').value = anio;
+  document.getElementById('edit-genero').value = genero || '';
+  document.getElementById('editModal').style.display = 'block';
+}
+
+async function actualizar(e) {
+  e.preventDefault();
+  const id = document.getElementById('edit-id').value;
+  const body = {
+    titulo: document.getElementById('edit-titulo').value,
+    director: document.getElementById('edit-director').value,
+    anio: parseInt(document.getElementById('edit-anio').value),
+    genero: document.getElementById('edit-genero').value
+  };
+  await apiRequest('/api/peliculas/' + id, {
+    method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body)
   });
