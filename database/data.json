@@ -1,51 +1,33 @@
 {
-  "peliculas": [
-    {
-      "id": "80cz1t8ij",
-      "titulo": "Planeta de los simios",
-      "director": "RAMON VALDEZ",
-      "anio": 1968
-    },
-    {
-      "id": "pjefre4wi",
-      "titulo": "Titanic",
-      "director": "Juan",
-      "anio": 2001
-    },
-    {
-      "id": "d1ufxekc5",
-      "titulo": "Fronzen",
-      "director": "RAMON VALDEZ",
-      "anio": 1968
-    }
-  ],
-  "salas": [
-    {
-      "id": "v9enmtnk8",
-      "nombre": "1",
-      "capacidad": 120
-    }
-  ],
+  "peliculas": [],
+  "salas": [],
   "funciones": [
     {
-      "id": "dgvqid221",
-      "peliculaId": null,
-      "salaId": "v9enmtnk8",
-      "fecha": "2024-02-20T14:02"
+      "id": "f_1",
+      "peliculaId": "1",
+      "salaId": "2",
+      "fecha": "2026-06-25T18:00"
     },
     {
-      "id": "tg1gr6976",
-      "peliculaId": null,
-      "salaId": "v9enmtnk8",
-      "fecha": "2024-02-20T14:04"
-    },
-    {
-      "id": "06o082zr9",
-      "peliculaId": null,
-      "salaId": "v9enmtnk8",
-      "fecha": "0202-02-20T14:02"
+      "id": "f_2",
+      "peliculaId": "2",
+      "salaId": "3",
+      "fecha": "2026-06-25T20:30"
     }
   ],
   "tickets": [],
-  "reservaciones": []
+  "reservaciones": [
+    {
+      "id": "r_1",
+      "funcionId": "f_1",
+      "cliente": "Carlos Diaz",
+      "createdAt": "2026-06-20T01:24:23.182Z"
+    },
+    {
+      "id": "r_2",
+      "funcionId": "f_2",
+      "cliente": "Luis Martinez",
+      "createdAt": "2026-06-20T01:26:03.182Z"
+    }
+  ]
 }
