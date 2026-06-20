@@ -2,21 +2,32 @@ const express = require('express');
 const router = express.Router();
 const db = require('../database/db');
 
+const Pelicula = require('../models/Pelicula');
+const Sala = require('../models/Sala');
+
 /* GET home page (View 1) */
 router.get('/', function(req, res, next) {
   res.render('index', { title: 'CineVision Dashboard' });
 });
 
 /* GET peliculas (View 2) */
-router.get('/peliculas', function(req, res, next) {
-  const data = db.readData();
-  res.render('peliculas', { title: 'Películas', peliculas: data.peliculas });
+router.get('/peliculas', async function(req, res, next) {
+  try {
+    const peliculas = await Pelicula.getAll();
+    res.render('peliculas', { title: 'Películas', peliculas });
+  } catch (error) {
+    next(error);
+  }
 });
 
 /* GET salas (View 3) */
-router.get('/salas', function(req, res, next) {
-  const data = db.readData();
-  res.render('salas', { title: 'Salas', salas: data.salas });
+router.get('/salas', async function(req, res, next) {
+  try {
+    const salas = await Sala.getAll();
+    res.render('salas', { title: 'Salas', salas });
+  } catch (error) {
+    next(error);
+  }
 });
 
 /* GET funciones (View 4) */

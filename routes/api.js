@@ -2,33 +2,41 @@ const express = require('express');
 const router = express.Router();
 const db = require('../database/db');
 
+const Pelicula = require('../models/Pelicula');
+const Sala = require('../models/Sala');
+
 // --- POST ENDPOINTS (Create / Ingresar datos y relacionar) ---
 
 // 1. POST /api/peliculas - Crear película
-router.post('/peliculas', (req, res) => {
-  const data = db.readData();
-  const nuevaPelicula = {
-    id: db.generateId(),
-    titulo: req.body.titulo || 'Sin título',
-    director: req.body.director || 'Desconocido',
-    anio: req.body.anio || 2024
-  };
-  data.peliculas.push(nuevaPelicula);
-  db.writeData(data);
-  res.status(201).json(nuevaPelicula);
+router.post('/peliculas', async (req, res) => {
+  try {
+    const pelicula = new Pelicula(
+      null, 
+      req.body.titulo || 'Sin título', 
+      req.body.director || 'Desconocido', 
+      req.body.anio || 2024,
+      req.body.genero || 'Drama'
+    );
+    await pelicula.save();
+    res.status(201).json(pelicula);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
 });
 
 // 2. POST /api/salas - Crear sala
-router.post('/salas', (req, res) => {
-  const data = db.readData();
-  const nuevaSala = {
-    id: db.generateId(),
-    nombre: req.body.nombre || 'Sala X',
-    capacidad: req.body.capacidad || 50
-  };
-  data.salas.push(nuevaSala);
-  db.writeData(data);
-  res.status(201).json(nuevaSala);
+router.post('/salas', async (req, res) => {
+  try {
+    const sala = new Sala(
+      null, 
+      req.body.nombre || 'Sala X', 
+      req.body.capacidad || 50
+    );
+    await sala.save();
+    res.status(201).json(sala);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
 });
 
 // 3. POST /api/funciones - Crear función (Relaciona Pelicula, Sala)
@@ -63,13 +71,16 @@ router.post('/reservaciones', (req, res) => {
 // --- GET ENDPOINTS (Consultar / Filtros / Orden) ---
 
 // 5. GET /api/peliculas/:id - Mostrar elemento por su id
-router.get('/peliculas/:id', (req, res) => {
-  const data = db.readData();
-  const pelicula = data.peliculas.find(p => p.id === req.params.id);
-  if (pelicula) {
-    res.json(pelicula);
-  } else {
-    res.status(404).json({ message: 'Película no encontrada' });
+router.get('/peliculas/:id', async (req, res) => {
+  try {
+    const pelicula = await Pelicula.getById(req.params.id);
+    if (pelicula) {
+      res.json(pelicula);
+    } else {
+      res.status(404).json({ message: 'Película no encontrada' });
+    }
+  } catch (error) {
+    res.status(500).json({ message: error.message });
   }
 });
 
@@ -107,28 +118,38 @@ router.get('/reservaciones/ultimas', (req, res) => {
 // --- PUT ENDPOINTS (Modificar) ---
 
 // 8. PUT /api/peliculas/:id - Modificar datos de una entidad
-router.put('/peliculas/:id', (req, res) => {
-  const data = db.readData();
-  const index = data.peliculas.findIndex(p => p.id === req.params.id);
-  if (index !== -1) {
-    data.peliculas[index] = { ...data.peliculas[index], ...req.body };
-    db.writeData(data);
-    res.json(data.peliculas[index]);
-  } else {
-    res.status(404).json({ message: 'Película no encontrada' });
+router.put('/peliculas/:id', async (req, res) => {
+  try {
+    const pelicula = await Pelicula.getById(req.params.id);
+    if (pelicula) {
+      pelicula.titulo = req.body.titulo || pelicula.titulo;
+      pelicula.director = req.body.director || pelicula.director;
+      pelicula.anio = req.body.anio || pelicula.anio;
+      pelicula.genero = req.body.genero || pelicula.genero;
+      await pelicula.save();
+      res.json(pelicula);
+    } else {
+      res.status(404).json({ message: 'Película no encontrada' });
+    }
+  } catch (error) {
+    res.status(500).json({ message: error.message });
   }
 });
 
 // 9. PUT /api/salas/:id - Modificar datos de una sala
-router.put('/salas/:id', (req, res) => {
-  const data = db.readData();
-  const index = data.salas.findIndex(s => s.id === req.params.id);
-  if (index !== -1) {
-    data.salas[index] = { ...data.salas[index], ...req.body };
-    db.writeData(data);
-    res.json(data.salas[index]);
-  } else {
-    res.status(404).json({ message: 'Sala no encontrada' });
+router.put('/salas/:id', async (req, res) => {
+  try {
+    const sala = await Sala.getById(req.params.id);
+    if (sala) {
+      sala.nombre = req.body.nombre || sala.nombre;
+      sala.capacidad = req.body.capacidad || sala.capacidad;
+      await sala.save();
+      res.json(sala);
+    } else {
+      res.status(404).json({ message: 'Sala no encontrada' });
+    }
+  } catch (error) {
+    res.status(500).json({ message: error.message });
   }
 });
 
@@ -149,15 +170,22 @@ router.put('/funciones/:id', (req, res) => {
 // --- DELETE ENDPOINTS (Eliminar / Quitar relaciones) ---
 
 // 11. DELETE /api/peliculas/:id - Eliminar elementos de una entidad
-router.delete('/peliculas/:id', (req, res) => {
-  const data = db.readData();
-  const index = data.peliculas.findIndex(p => p.id === req.params.id);
-  if (index !== -1) {
-    data.peliculas.splice(index, 1);
-    db.writeData(data);
+router.delete('/peliculas/:id', async (req, res) => {
+  try {
+    await Pelicula.delete(req.params.id);
     res.json({ message: 'Película eliminada correctamente' });
-  } else {
-    res.status(404).json({ message: 'Película no encontrada' });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// 11b. DELETE /api/salas/:id - Eliminar elementos de una sala (Agregado)
+router.delete('/salas/:id', async (req, res) => {
+  try {
+    await Sala.delete(req.params.id);
+    res.json({ message: 'Sala eliminada correctamente' });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
   }
 });
 
