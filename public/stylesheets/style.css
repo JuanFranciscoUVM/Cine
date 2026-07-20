@@ -92,6 +92,43 @@ body {
   position: sticky;
   top: 0;
   z-index: 10;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.user-badge {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-main);
+  background: rgba(99, 102, 241, 0.15);
+  border: 1px solid var(--border);
+  padding: 0.5rem 0.9rem;
+  border-radius: 0.5rem;
+}
+
+.user-badge span {
+  color: var(--primary);
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  letter-spacing: 0.04em;
+}
+
+.user-badge.muted {
+  color: var(--text-muted);
+  background: transparent;
+}
+
+.alert-warn {
+  background: rgba(239, 68, 68, 0.15);
+  border: 1px solid var(--danger);
+  color: #fecaca;
+  padding: 0.75rem 1rem;
+  border-radius: 0.5rem;
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
 }
 
 .content-wrapper {
