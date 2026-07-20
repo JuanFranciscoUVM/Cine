@@ -1,220 +1,316 @@
 const express = require('express');
 const router = express.Router();
-const db = require('../database/db');
+const { verificarToken, autorizarRoles } = require('../middleware/auth');
+const peliculasController = require('../controllers/peliculasController');
+const salasController = require('../controllers/salasController');
+const funcionesController = require('../controllers/funcionesController');
+const reservacionesController = require('../controllers/reservacionesController');
 
-const Pelicula = require('../models/Pelicula');
-const Sala = require('../models/Sala');
-
-// --- POST ENDPOINTS (Create / Ingresar datos y relacionar) ---
-
-// 1. POST /api/peliculas - Crear película
-router.post('/peliculas', async (req, res) => {
-  try {
-    const pelicula = new Pelicula(
-      null, 
-      req.body.titulo || 'Sin título', 
-      req.body.director || 'Desconocido', 
-      req.body.anio || 2024,
-      req.body.genero || 'Drama'
-    );
-    await pelicula.save();
-    res.status(201).json(pelicula);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
+function responder(res, result) {
+  if (result.data !== undefined) {
+    return res.status(result.status).json(result.data);
   }
-});
+  return res.status(result.status).json({ message: result.message });
+}
 
-// 2. POST /api/salas - Crear sala
-router.post('/salas', async (req, res) => {
-  try {
-    const sala = new Sala(
-      null, 
-      req.body.nombre || 'Sala X', 
-      req.body.capacidad || 50
-    );
-    await sala.save();
-    res.status(201).json(sala);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-});
+function manejarError(res, err) {
+  res.status(500).json({ message: err.message || 'Error interno del servidor' });
+}
 
-// 3. POST /api/funciones - Crear función (Relaciona Pelicula, Sala)
-router.post('/funciones', (req, res) => {
-  const data = db.readData();
-  const nuevaFuncion = {
-    id: db.generateId(),
-    peliculaId: req.body.peliculaId || null,
-    salaId: req.body.salaId || null,
-    fecha: req.body.fecha || new Date().toISOString() // formato YYYY-MM-DD
-  };
-  data.funciones.push(nuevaFuncion);
-  db.writeData(data);
-  res.status(201).json(nuevaFuncion);
-});
+/* Todas las rutas /api/* requieren sesión (JWT). Login/registro están en /api/auth */
+router.use(verificarToken);
 
-// 4. POST /api/reservaciones - Crear reservación
-router.post('/reservaciones', (req, res) => {
-    const data = db.readData();
-    const nuevaReservacion = {
-        id: db.generateId(),
-        funcionId: req.body.funcionId || null,
-        cliente: req.body.cliente || 'Desconocido',
-        createdAt: new Date().toISOString()
-    };
-    data.reservaciones.push(nuevaReservacion);
-    db.writeData(data);
-    res.status(201).json(nuevaReservacion);
-});
+/* ---------- LECTURA (cualquier usuario autenticado) ---------- */
 
-
-// --- GET ENDPOINTS (Consultar / Filtros / Orden) ---
-
-// 5. GET /api/peliculas/:id - Mostrar elemento por su id
-router.get('/peliculas/:id', async (req, res) => {
-  try {
-    const pelicula = await Pelicula.getById(req.params.id);
-    if (pelicula) {
-      res.json(pelicula);
-    } else {
-      res.status(404).json({ message: 'Película no encontrada' });
-    }
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-});
-
-// 6. GET /api/funciones/fechas - Mostrar elementos en un rango de fecha
-// Requiere query parameters: ?inicio=YYYY-MM-DD&fin=YYYY-MM-DD
-router.get('/funciones/fechas', (req, res) => {
-  const data = db.readData();
-  const { inicio, fin } = req.query;
-  if (!inicio || !fin) {
-    return res.status(400).json({ message: 'Por favor provea fechas de inicio y fin en el query.' });
-  }
-
-  const inicioDate = new Date(inicio);
-  const finDate = new Date(fin);
-
-  const funcionesFiltradas = data.funciones.filter(f => {
-    const fechaFuncion = new Date(f.fecha);
-    return fechaFuncion >= inicioDate && fechaFuncion <= finDate;
+router.get('/peliculas', autorizarRoles('admin', 'empleado', 'cliente'), function (req, res) {
+  return new Promise(function (resolve) {
+    peliculasController
+      .listar()
+      .then(function (result) {
+        responder(res, result);
+        resolve();
+      })
+      .catch(function (err) {
+        manejarError(res, err);
+        resolve();
+      });
   });
-
-  res.json(funcionesFiltradas);
 });
 
-// 7. GET /api/reservaciones/ultimas - Mostrar los últimos 5 elementos
-router.get('/reservaciones/ultimas', (req, res) => {
-  const data = db.readData();
-  // Ordenar por createdAt de más reciente a más antiguo
-  const ordenadas = data.reservaciones.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-  // Tomar los últimos 5 (los 5 más recientes)
-  const top5 = ordenadas.slice(0, 5);
-  res.json(top5);
+router.get('/peliculas/:id', autorizarRoles('admin', 'empleado', 'cliente'), function (req, res) {
+  return new Promise(function (resolve) {
+    peliculasController
+      .obtenerPorId(req.params.id)
+      .then(function (result) {
+        responder(res, result);
+        resolve();
+      })
+      .catch(function (err) {
+        manejarError(res, err);
+        resolve();
+      });
+  });
 });
 
-
-// --- PUT ENDPOINTS (Modificar) ---
-
-// 8. PUT /api/peliculas/:id - Modificar datos de una entidad
-router.put('/peliculas/:id', async (req, res) => {
-  try {
-    const pelicula = await Pelicula.getById(req.params.id);
-    if (pelicula) {
-      pelicula.titulo = req.body.titulo || pelicula.titulo;
-      pelicula.director = req.body.director || pelicula.director;
-      pelicula.anio = req.body.anio || pelicula.anio;
-      pelicula.genero = req.body.genero || pelicula.genero;
-      await pelicula.save();
-      res.json(pelicula);
-    } else {
-      res.status(404).json({ message: 'Película no encontrada' });
-    }
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
+router.get('/salas', autorizarRoles('admin', 'empleado'), function (req, res) {
+  return new Promise(function (resolve) {
+    salasController
+      .listar()
+      .then(function (result) {
+        responder(res, result);
+        resolve();
+      })
+      .catch(function (err) {
+        manejarError(res, err);
+        resolve();
+      });
+  });
 });
 
-// 9. PUT /api/salas/:id - Modificar datos de una sala
-router.put('/salas/:id', async (req, res) => {
-  try {
-    const sala = await Sala.getById(req.params.id);
-    if (sala) {
-      sala.nombre = req.body.nombre || sala.nombre;
-      sala.capacidad = req.body.capacidad || sala.capacidad;
-      await sala.save();
-      res.json(sala);
-    } else {
-      res.status(404).json({ message: 'Sala no encontrada' });
-    }
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
+router.get('/funciones', autorizarRoles('admin', 'empleado', 'cliente'), function (req, res) {
+  return new Promise(function (resolve) {
+    funcionesController
+      .listar()
+      .then(function (result) {
+        responder(res, result);
+        resolve();
+      })
+      .catch(function (err) {
+        manejarError(res, err);
+        resolve();
+      });
+  });
 });
 
-// 10. PUT /api/funciones/:id - Modificar datos de una funcion
-router.put('/funciones/:id', (req, res) => {
-    const data = db.readData();
-    const index = data.funciones.findIndex(f => f.id === req.params.id);
-    if (index !== -1) {
-      data.funciones[index] = { ...data.funciones[index], ...req.body };
-      db.writeData(data);
-      res.json(data.funciones[index]);
-    } else {
-      res.status(404).json({ message: 'Función no encontrada' });
-    }
+router.get('/funciones/fechas', autorizarRoles('admin', 'empleado', 'cliente'), function (req, res) {
+  return new Promise(function (resolve) {
+    funcionesController
+      .filtrarPorFechas(req.query.inicio, req.query.fin)
+      .then(function (result) {
+        responder(res, result);
+        resolve();
+      })
+      .catch(function (err) {
+        manejarError(res, err);
+        resolve();
+      });
+  });
 });
 
+/* ---------- ADMIN (películas y salas) ---------- */
 
-// --- DELETE ENDPOINTS (Eliminar / Quitar relaciones) ---
-
-// 11. DELETE /api/peliculas/:id - Eliminar elementos de una entidad
-router.delete('/peliculas/:id', async (req, res) => {
-  try {
-    await Pelicula.delete(req.params.id);
-    res.json({ message: 'Película eliminada correctamente' });
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
+router.post('/peliculas', autorizarRoles('admin'), function (req, res) {
+  return new Promise(function (resolve) {
+    peliculasController
+      .crear(req.body)
+      .then(function (result) {
+        responder(res, result);
+        resolve();
+      })
+      .catch(function (err) {
+        manejarError(res, err);
+        resolve();
+      });
+  });
 });
 
-// 11b. DELETE /api/salas/:id - Eliminar elementos de una sala (Agregado)
-router.delete('/salas/:id', async (req, res) => {
-  try {
-    await Sala.delete(req.params.id);
-    res.json({ message: 'Sala eliminada correctamente' });
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
+router.put('/peliculas/:id', autorizarRoles('admin'), function (req, res) {
+  return new Promise(function (resolve) {
+    peliculasController
+      .actualizar(req.params.id, req.body)
+      .then(function (result) {
+        responder(res, result);
+        resolve();
+      })
+      .catch(function (err) {
+        manejarError(res, err);
+        resolve();
+      });
+  });
 });
 
-// 12. DELETE /api/reservaciones/:id - Eliminar reservacion
-router.delete('/reservaciones/:id', (req, res) => {
-  const data = db.readData();
-  const index = data.reservaciones.findIndex(r => r.id === req.params.id);
-  if (index !== -1) {
-    data.reservaciones.splice(index, 1);
-    db.writeData(data);
-    res.json({ message: 'Reservación eliminada correctamente' });
-  } else {
-    res.status(404).json({ message: 'Reservación no encontrada' });
-  }
+router.delete('/peliculas/:id', autorizarRoles('admin'), function (req, res) {
+  return new Promise(function (resolve) {
+    peliculasController
+      .eliminar(req.params.id)
+      .then(function (result) {
+        responder(res, result);
+        resolve();
+      })
+      .catch(function (err) {
+        manejarError(res, err);
+        resolve();
+      });
+  });
 });
 
-// 13. DELETE /api/funciones/:id/pelicula - Eliminar la relación entre elementos
-// Remueve la película de la función
-router.delete('/funciones/:id/pelicula', (req, res) => {
-  const data = db.readData();
-  const index = data.funciones.findIndex(f => f.id === req.params.id);
-  if (index !== -1) {
-    // Romper la relación
-    data.funciones[index].peliculaId = null;
-    db.writeData(data);
-    res.json({ message: 'Relación con película eliminada de la función', funcion: data.funciones[index] });
-  } else {
-    res.status(404).json({ message: 'Función no encontrada' });
-  }
+router.post('/salas', autorizarRoles('admin'), function (req, res) {
+  return new Promise(function (resolve) {
+    salasController
+      .crear(req.body)
+      .then(function (result) {
+        responder(res, result);
+        resolve();
+      })
+      .catch(function (err) {
+        manejarError(res, err);
+        resolve();
+      });
+  });
+});
+
+router.put('/salas/:id', autorizarRoles('admin'), function (req, res) {
+  return new Promise(function (resolve) {
+    salasController
+      .actualizar(req.params.id, req.body)
+      .then(function (result) {
+        responder(res, result);
+        resolve();
+      })
+      .catch(function (err) {
+        manejarError(res, err);
+        resolve();
+      });
+  });
+});
+
+/* ---------- EMPLEADO (funciones y control de reservaciones) ---------- */
+
+router.post('/funciones', autorizarRoles('empleado'), function (req, res) {
+  return new Promise(function (resolve) {
+    funcionesController
+      .crear(req.body)
+      .then(function (result) {
+        responder(res, result);
+        resolve();
+      })
+      .catch(function (err) {
+        manejarError(res, err);
+        resolve();
+      });
+  });
+});
+
+router.put('/funciones/:id', autorizarRoles('empleado'), function (req, res) {
+  return new Promise(function (resolve) {
+    funcionesController
+      .actualizar(req.params.id, req.body)
+      .then(function (result) {
+        responder(res, result);
+        resolve();
+      })
+      .catch(function (err) {
+        manejarError(res, err);
+        resolve();
+      });
+  });
+});
+
+router.delete('/funciones/:id/pelicula', autorizarRoles('empleado'), function (req, res) {
+  return new Promise(function (resolve) {
+    funcionesController
+      .quitarPelicula(req.params.id)
+      .then(function (result) {
+        responder(res, result);
+        resolve();
+      })
+      .catch(function (err) {
+        manejarError(res, err);
+        resolve();
+      });
+  });
+});
+
+router.get('/reservaciones/ultimas', autorizarRoles('empleado'), function (req, res) {
+  return new Promise(function (resolve) {
+    reservacionesController
+      .ultimas()
+      .then(function (result) {
+        responder(res, result);
+        resolve();
+      })
+      .catch(function (err) {
+        manejarError(res, err);
+        resolve();
+      });
+  });
+});
+
+router.delete('/reservaciones/:id', autorizarRoles('empleado'), function (req, res) {
+  return new Promise(function (resolve) {
+    reservacionesController
+      .eliminar(req.params.id)
+      .then(function (result) {
+        responder(res, result);
+        resolve();
+      })
+      .catch(function (err) {
+        manejarError(res, err);
+        resolve();
+      });
+  });
+});
+
+/* ---------- CLIENTE (crear y editar reservaciones) ---------- */
+
+router.post('/reservaciones', autorizarRoles('cliente'), function (req, res) {
+  return new Promise(function (resolve) {
+    reservacionesController
+      .crear(req.body)
+      .then(function (result) {
+        responder(res, result);
+        resolve();
+      })
+      .catch(function (err) {
+        manejarError(res, err);
+        resolve();
+      });
+  });
+});
+
+router.put('/reservaciones/:id', autorizarRoles('cliente'), function (req, res) {
+  return new Promise(function (resolve) {
+    reservacionesController
+      .actualizar(req.params.id, req.body)
+      .then(function (result) {
+        responder(res, result);
+        resolve();
+      })
+      .catch(function (err) {
+        manejarError(res, err);
+        resolve();
+      });
+  });
+});
+
+router.get('/reservaciones/:id', autorizarRoles('cliente'), function (req, res) {
+  return new Promise(function (resolve) {
+    reservacionesController
+      .obtenerPorId(req.params.id)
+      .then(function (result) {
+        responder(res, result);
+        resolve();
+      })
+      .catch(function (err) {
+        manejarError(res, err);
+        resolve();
+      });
+  });
+});
+
+router.get('/reservaciones', autorizarRoles('cliente', 'empleado'), function (req, res) {
+  return new Promise(function (resolve) {
+    reservacionesController
+      .listar()
+      .then(function (result) {
+        responder(res, result);
+        resolve();
+      })
+      .catch(function (err) {
+        manejarError(res, err);
+        resolve();
+      });
+  });
 });
 
 module.exports = router;
