@@ -1,33 +1,111 @@
 {
-  "peliculas": [],
-  "salas": [],
-  "funciones": [
+  "peliculas": [
     {
-      "id": "f_1",
-      "peliculaId": "1",
-      "salaId": "2",
-      "fecha": "2026-06-25T18:00"
+      "id": "80cz1t8ij",
+      "titulo": "Planeta de los simios",
+      "director": "RAMON VALDEZ",
+      "anio": 1968
     },
     {
-      "id": "f_2",
-      "peliculaId": "2",
-      "salaId": "3",
-      "fecha": "2026-06-25T20:30"
+      "id": "pjefre4wi",
+      "titulo": "Titanic",
+      "director": "Juan",
+      "anio": 2001
+    },
+    {
+      "id": "d1ufxekc5",
+      "titulo": "Fronzen",
+      "director": "RAMON VALDEZ",
+      "anio": 1968
+    },
+    {
+      "id": "xsvbxauep",
+      "titulo": "Titanic",
+      "director": "Juan",
+      "anio": 2010
+    },
+    {
+      "id": "xc78uchvf",
+      "titulo": "Test Auth",
+      "director": "Dir",
+      "anio": 2026
+    }
+  ],
+  "salas": [
+    {
+      "id": "v9enmtnk8",
+      "nombre": "1",
+      "capacidad": 120
+    },
+    {
+      "id": "4co2z0u9q",
+      "nombre": "sala numero 10",
+      "capacidad": 120
+    }
+  ],
+  "funciones": [
+    {
+      "id": "dgvqid221",
+      "peliculaId": null,
+      "salaId": "v9enmtnk8",
+      "fecha": "2024-02-20T14:02"
+    },
+    {
+      "id": "tg1gr6976",
+      "peliculaId": null,
+      "salaId": "v9enmtnk8",
+      "fecha": "2024-02-20T14:04"
+    },
+    {
+      "id": "06o082zr9",
+      "peliculaId": null,
+      "salaId": "v9enmtnk8",
+      "fecha": "0202-02-20T14:02"
+    },
+    {
+      "id": "y2tj3mi04",
+      "peliculaId": "d1ufxekc5",
+      "salaId": "4co2z0u9q",
+      "fecha": "2000-10-10T10:20"
     }
   ],
   "tickets": [],
   "reservaciones": [
     {
-      "id": "r_1",
-      "funcionId": "f_1",
-      "cliente": "Carlos Diaz",
-      "createdAt": "2026-06-20T01:24:23.182Z"
+      "id": "old2m1emp",
+      "funcionId": "y2tj3mi04",
+      "cliente": "Pedro",
+      "createdAt": "2026-05-29T23:04:33.129Z"
+    }
+  ],
+  "usuarios": [
+    {
+      "id": "air9dghgg",
+      "email": "admin@cine.com",
+      "nombre": "Administrador",
+      "password": "$2b$10$qSms6zMCCf6NlFeKLPI3W.EgFcW7g67eP7VNOLHIEZLBYqT888X3m",
+      "rol": "admin",
+      "createdAt": "2026-07-19T01:42:56.515Z"
     },
     {
-      "id": "r_2",
-      "funcionId": "f_2",
-      "cliente": "Luis Martinez",
-      "createdAt": "2026-06-20T01:26:03.182Z"
+      "id": "glgctn89v",
+      "email": "empleado@cine.com",
+      "nombre": "Empleado Cine",
+      "password": "$2b$10$MDXsaymcRtp6ngQHWg.bmu63Jl/KvGBiwixal2YySbGIELI4Dx6wK",
+      "rol": "empleado",
+      "createdAt": "2026-07-19T01:42:56.517Z"
+    },
+    {
+      "id": "dxldfr4lz",
+      "email": "cliente@cine.com",
+      "nombre": "Cliente Demo",
+      "password": "$2b$10$3x7tHtbQhvrAlLZNo.1OseZAL/g9t9OQ/SDvArF/vnKJKc.5rWLva",
+      "rol": "cliente",
+      "createdAt": "2026-07-19T01:42:56.517Z"
     }
+  ],
+  "_migrations": [
+    "001_estructura",
+    "002_usuarios_seed"
   ]
 }
