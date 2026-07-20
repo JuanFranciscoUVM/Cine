@@ -2,11 +2,42 @@
     </main>
   </div> <!-- end dashboard-container -->
   <script>
-    // Utils to handle standard API responses
+    function getCookie(name) {
+      const match = document.cookie.match(new RegExp('(?:^|; )' + name + '=([^;]*)'));
+      return match ? decodeURIComponent(match[1]) : null;
+    }
+
+    function getToken() {
+      return getCookie('token') || localStorage.getItem('token');
+    }
+
     async function apiRequest(url, options = {}) {
       try {
-        const response = await fetch(url, options);
-        if(!response.ok) throw new Error('Request error');
+        const headers = Object.assign(
+          { 'Content-Type': 'application/json' },
+          options.headers || {}
+        );
+        const token = getToken();
+        if (token) {
+          headers.Authorization = 'Bearer ' + token;
+        }
+
+        const response = await fetch(url, Object.assign({}, options, { headers: headers }));
+        let data = null;
+        try {
+          data = await response.json();
+        } catch (e) {
+          data = null;
+        }
+
+        if (!response.ok) {
+          const msg =
+            (data && data.message) ||
+            'Advertencia: no autorizado o error en la solicitud (' + response.status + ').';
+          alert(msg);
+          return;
+        }
+
         location.reload();
       } catch (err) {
         alert(err.message);

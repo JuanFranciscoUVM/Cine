@@ -16,15 +16,43 @@
         <span>CineVision</span>
       </div>
       <nav class="sidebar-nav">
-        <a href="/" class="<%= title === 'CineVision Dashboard' ? 'active' : '' %>"><i class="fa-solid fa-house"></i> Dashboard</a>
-        <a href="/peliculas" class="<%= title === 'Películas' ? 'active' : '' %>"><i class="fa-solid fa-video"></i> Películas</a>
-        <a href="/salas" class="<%= title === 'Salas' ? 'active' : '' %>"><i class="fa-solid fa-couch"></i> Salas</a>
-        <a href="/funciones" class="<%= title === 'Funciones' ? 'active' : '' %>"><i class="fa-solid fa-calendar-alt"></i> Funciones</a>
-        <a href="/reservaciones" class="<%= title === 'Reservaciones' ? 'active' : '' %>"><i class="fa-solid fa-ticket-simple"></i> Reservaciones</a>
+        <% if (typeof user !== 'undefined' && user) { %>
+          <a href="/" class="<%= title === 'CineVision Dashboard' ? 'active' : '' %>"><i class="fa-solid fa-house"></i> Dashboard</a>
+
+          <% if (user.rol === 'admin' || user.rol === 'empleado' || user.rol === 'cliente') { %>
+            <a href="/peliculas" class="<%= title === 'Películas' ? 'active' : '' %>"><i class="fa-solid fa-video"></i> Películas</a>
+          <% } %>
+
+          <% if (user.rol === 'admin' || user.rol === 'empleado') { %>
+            <a href="/salas" class="<%= title === 'Salas' ? 'active' : '' %>"><i class="fa-solid fa-couch"></i> Salas</a>
+          <% } %>
+
+          <% if (user.rol === 'admin' || user.rol === 'empleado' || user.rol === 'cliente') { %>
+            <a href="/funciones" class="<%= title === 'Funciones' ? 'active' : '' %>"><i class="fa-solid fa-calendar-alt"></i> Funciones</a>
+          <% } %>
+
+          <% if (user.rol === 'cliente' || user.rol === 'empleado') { %>
+            <a href="/reservaciones" class="<%= title === 'Reservaciones' ? 'active' : '' %>"><i class="fa-solid fa-ticket-simple"></i> Reservaciones</a>
+          <% } %>
+
+          <a href="/permisos" class="<%= title === 'Roles y permisos' ? 'active' : '' %>"><i class="fa-solid fa-shield-halved"></i> Permisos</a>
+          <a href="/logout"><i class="fa-solid fa-right-from-bracket"></i> Cerrar sesión</a>
+        <% } else { %>
+          <a href="/login" class="<%= title === 'Iniciar sesión' ? 'active' : '' %>"><i class="fa-solid fa-right-to-bracket"></i> Login</a>
+          <a href="/registro" class="<%= title === 'Registro' ? 'active' : '' %>"><i class="fa-solid fa-user-plus"></i> Registro</a>
+        <% } %>
       </nav>
     </aside>
     <main class="main-content">
       <header class="top-header">
         <h1><%= title %></h1>
+        <% if (typeof user !== 'undefined' && user) { %>
+          <div class="user-badge">
+            <i class="fa-solid fa-user"></i>
+            <%= user.nombre %> · <span><%= user.rol %></span>
+          </div>
+        <% } else { %>
+          <div class="user-badge muted">Debe iniciar sesión</div>
+        <% } %>
       </header>
       <div class="content-wrapper">
