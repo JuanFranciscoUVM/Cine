@@ -1,7 +1,9 @@
 <%- include('partials/header') %>
 
+<% if (typeof user !== 'undefined' && user && user.rol === 'empleado') { %>
 <div class="card">
   <h2>Programar Función</h2>
+  <p style="color:var(--text-muted);margin-bottom:1rem;">Solo rol <strong>empleado</strong></p>
   <form onsubmit="crear(event)">
     <div class="form-group">
       <label>Película</label>
@@ -26,10 +28,16 @@
     <button type="submit" class="btn"><i class="fa-solid fa-calendar-plus"></i> Añadir Función</button>
   </form>
 </div>
+<% } else { %>
+<div class="card">
+  <p style="color: var(--text-muted);">Solo lectura. Programar / modificar funciones requiere rol <strong>empleado</strong>.</p>
+</div>
+<% } %>
 
 <div class="card" style="margin-bottom: 2rem;">
   <h2>Filtro de Funciones por Fecha</h2>
-  <div style="display:flex; gap: 1rem; align-items: flex-end;">
+  <p style="color: var(--text-muted); margin-bottom: 0.75rem;">Disponible para usuarios autenticados.</p>
+  <div style="display:flex; gap: 1rem; align-items: flex-end; flex-wrap: wrap;">
     <div class="form-group" style="margin-bottom: 0;">
       <label>Inicio</label>
       <input type="date" id="fechaInicio">
@@ -52,7 +60,9 @@
         <th>Película</th>
         <th>Sala</th>
         <th>Fecha</th>
+        <% if (typeof user !== 'undefined' && user && user.rol === 'empleado') { %>
         <th>Acciones</th>
+        <% } %>
       </tr>
     </thead>
     <tbody>
@@ -62,11 +72,13 @@
           <td><strong><%= f.pelicula %></strong></td>
           <td><%= f.sala %></td>
           <td><%= !isNaN(new Date(f.fecha)) ? new Date(f.fecha).toLocaleString() : 'Fecha Inválida' %></td>
+          <% if (typeof user !== 'undefined' && user && user.rol === 'empleado') { %>
           <td>
             <% if(f.peliculaId) { %>
               <button class="btn btn-danger" onclick="quitarPelicula('<%= f.id %>')" title="Quitar película (Romper relación)"><i class="fa-solid fa-unlink"></i></button>
             <% } %>
           </td>
+          <% } %>
         </tr>
       <% }); %>
     </tbody>
@@ -83,7 +95,6 @@ async function crear(e) {
   };
   await apiRequest('/api/funciones', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body)
   });
 }
@@ -98,11 +109,18 @@ async function filtrar() {
   const ini = document.getElementById('fechaInicio').value;
   const fin = document.getElementById('fechaFin').value;
   if(!ini || !fin) return alert('Selecciona ambas fechas');
-  
+
   try {
-    const res = await fetch(`/api/funciones/fechas?inicio=${ini}&fin=${fin}`);
+    const token = getToken();
+    const res = await fetch('/api/funciones/fechas?inicio=' + ini + '&fin=' + fin, {
+      headers: token ? { Authorization: 'Bearer ' + token } : {}
+    });
     const data = await res.json();
-    document.getElementById('filterResult').innerHTML = `Se encontraron <strong>${data.length}</strong> funciones en ese rango.`;
+    if (!res.ok) {
+      alert(data.message || 'Error al filtrar');
+      return;
+    }
+    document.getElementById('filterResult').innerHTML = 'Se encontraron <strong>' + data.length + '</strong> funciones en ese rango.';
   } catch(e) {
     alert(e.message);
   }

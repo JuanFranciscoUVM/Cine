@@ -1,11 +1,13 @@
 <%- include('partials/header') %>
 
+<% if (typeof user !== 'undefined' && user && user.rol === 'cliente') { %>
 <div class="card">
   <h2>Crear Reservación</h2>
+  <p style="color:var(--text-muted);margin-bottom:1rem;">Solo rol <strong>cliente</strong></p>
   <form onsubmit="crear(event)">
     <div class="form-group">
       <label>Cliente</label>
-      <input type="text" id="cliente" required>
+      <input type="text" id="cliente" required value="<%= user.nombre %>">
     </div>
     <div class="form-group">
       <label>Función</label>
@@ -18,11 +20,14 @@
     <button type="submit" class="btn"><i class="fa-solid fa-ticket"></i> Reservar</button>
   </form>
 </div>
+<% } %>
 
 <div class="card" style="margin-bottom: 2rem;">
   <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
     <h2>Todas las Reservaciones</h2>
+    <% if (typeof user !== 'undefined' && user && user.rol === 'empleado') { %>
     <button class="btn btn-danger" onclick="verUltimas()" style="background:#4f46e5;"><i class="fa-solid fa-clock"></i> Ver Últimas 5</button>
+    <% } %>
   </div>
   <table>
     <thead>
@@ -44,7 +49,12 @@
           <td><%= r.fecha && !isNaN(new Date(r.fecha)) ? new Date(r.fecha).toLocaleString() : 'Fecha Inválida' %></td>
           <td><%= new Date(r.createdAt).toLocaleString() %></td>
           <td>
-            <button class="btn btn-danger" onclick="eliminar('<%= r.id %>')"><i class="fa-solid fa-trash"></i></button>
+            <% if (user.rol === 'cliente') { %>
+              <button class="btn" onclick="editar('<%= r.id %>', '<%= r.cliente %>')"><i class="fa-solid fa-pen"></i></button>
+            <% } %>
+            <% if (user.rol === 'empleado') { %>
+              <button class="btn btn-danger" onclick="eliminar('<%= r.id %>')"><i class="fa-solid fa-trash"></i></button>
+            <% } %>
           </td>
         </tr>
       <% }); %>
@@ -61,8 +71,16 @@ async function crear(e) {
   };
   await apiRequest('/api/reservaciones', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body)
+  });
+}
+
+async function editar(id, clienteActual) {
+  const nuevo = prompt('Nuevo nombre de cliente:', clienteActual);
+  if (!nuevo) return;
+  await apiRequest('/api/reservaciones/' + id, {
+    method: 'PUT',
+    body: JSON.stringify({ cliente: nuevo })
   });
 }
 
@@ -74,13 +92,19 @@ async function eliminar(id) {
 
 async function verUltimas() {
   try {
-    const res = await fetch('/api/reservaciones/ultimas');
+    const token = getToken();
+    const res = await fetch('/api/reservaciones/ultimas', {
+      headers: token ? { Authorization: 'Bearer ' + token } : {}
+    });
     const data = await res.json();
-    
-    // Clear list and re-render only the lasts
+    if (!res.ok) {
+      alert(data.message || 'Error');
+      return;
+    }
+
     const tbody = document.getElementById('resList');
     tbody.innerHTML = '';
-    
+
     data.forEach(r => {
       const tr = document.createElement('tr');
       tr.innerHTML = `

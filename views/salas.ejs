@@ -1,7 +1,9 @@
 <%- include('partials/header') %>
 
+<% if (typeof user !== 'undefined' && user && user.rol === 'admin') { %>
 <div class="card">
   <h2>Ingresar Nueva Sala</h2>
+  <p style="color:var(--text-muted);margin-bottom:1rem;">Solo rol <strong>admin</strong></p>
   <form onsubmit="crear(event)">
     <div class="form-group">
       <label>Nombre de Sala</label>
@@ -14,6 +16,11 @@
     <button type="submit" class="btn"><i class="fa-solid fa-plus"></i> Añadir Sala</button>
   </form>
 </div>
+<% } else { %>
+<div class="card">
+  <p style="color: var(--text-muted);">Solo lectura (empleado). Crear / modificar salas requiere rol <strong>admin</strong>.</p>
+</div>
+<% } %>
 
 <div class="card">
   <h2>Listado de Salas</h2>
@@ -23,7 +30,6 @@
         <th>ID</th>
         <th>Nombre</th>
         <th>Capacidad</th>
-        <th>Acciones</th>
       </tr>
     </thead>
     <tbody>
@@ -32,32 +38,10 @@
           <td><%= s.id %></td>
           <td><strong><%= s.nombre %></strong></td>
           <td><%= s.capacidad %> personas</td>
-          <td>
-            <button class="btn btn-primary" onclick="abrirEditar('<%= s.id %>', '<%= s.nombre %>', '<%= s.capacidad %>')"><i class="fa-solid fa-edit"></i></button>
-            <button class="btn btn-danger" onclick="eliminar('<%= s.id %>')"><i class="fa-solid fa-trash"></i></button>
-          </td>
         </tr>
       <% }); %>
     </tbody>
   </table>
-</div>
-
-<!-- Simple Edit Modal / Div -->
-<div id="editModal" class="card" style="display:none; position:fixed; top:20%; left:30%; width:40%; z-index:100; box-shadow: 0 5px 15px rgba(0,0,0,0.5);">
-  <h2>Editar Sala</h2>
-  <form id="formEditarSala" onsubmit="actualizar(event)">
-    <input type="hidden" id="edit-id">
-    <div class="form-group">
-      <label>Nombre de Sala</label>
-      <input type="text" id="edit-nombre" required>
-    </div>
-    <div class="form-group">
-      <label>Capacidad</label>
-      <input type="number" id="edit-capacidad" required>
-    </div>
-    <button type="submit" class="btn"><i class="fa-solid fa-save"></i> Guardar</button>
-    <button type="button" class="btn btn-danger" onclick="document.getElementById('editModal').style.display='none'">Cancelar</button>
-  </form>
 </div>
 
 <script>
@@ -69,36 +53,8 @@ async function crear(e) {
   };
   await apiRequest('/api/salas', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body)
   });
-}
-
-function abrirEditar(id, nombre, capacidad) {
-  document.getElementById('edit-id').value = id;
-  document.getElementById('edit-nombre').value = nombre;
-  document.getElementById('edit-capacidad').value = capacidad;
-  document.getElementById('editModal').style.display = 'block';
-}
-
-async function actualizar(e) {
-  e.preventDefault();
-  const id = document.getElementById('edit-id').value;
-  const body = {
-    nombre: document.getElementById('edit-nombre').value,
-    capacidad: parseInt(document.getElementById('edit-capacidad').value)
-  };
-  await apiRequest('/api/salas/' + id, {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body)
-  });
-}
-
-async function eliminar(id) {
-  if(confirm('¿Eliminar esta sala?')) {
-    await apiRequest('/api/salas/' + id, { method: 'DELETE' });
-  }
 }
 </script>
 

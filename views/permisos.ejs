@@ -1,0 +1,63 @@
+<%- include('partials/header') %>
+
+<div class="card">
+  <h2>Acceso al sistema</h2>
+  <p style="color: var(--text-muted); line-height: 1.6; margin-bottom: 1rem;">
+    <strong>Todas las rutas del panel y de la API</strong> requieren iniciar sesión (JWT).
+    Sin token válido: las vistas redirigen a Login y la API responde 401 con advertencia.
+  </p>
+  <p style="color: var(--text-muted); line-height: 1.6;">
+    Únicas rutas abiertas sin sesión: <code>/login</code>, <code>/registro</code>,
+    <code>POST /api/auth/login</code> y <code>POST /api/auth/register</code>.
+  </p>
+</div>
+
+<div class="card">
+  <h2>Permisos coherentes por rol</h2>
+  <p style="color: var(--text-muted); margin-bottom: 1rem;">
+    Cada rol tiene un trabajo distinto. Si intenta una operación no autorizada, recibe una advertencia (HTTP 403).
+  </p>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Rol</th>
+        <th>Qué puede hacer en el panel</th>
+        <th>Operaciones exclusivas (API)</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>admin</strong></td>
+        <td>Películas (CRUD), Salas (CRUD), Funciones (solo ver)</td>
+        <td>Crear / editar / eliminar películas · Crear / editar salas</td>
+      </tr>
+      <tr>
+        <td><strong>empleado</strong></td>
+        <td>Películas y salas (ver), Funciones (gestionar), Reservaciones (control)</td>
+        <td>Crear / editar funciones · Quitar película · Eliminar reservación · Últimas 5</td>
+      </tr>
+      <tr>
+        <td><strong>cliente</strong></td>
+        <td>Películas y funciones (ver), Reservaciones (crear/editar)</td>
+        <td>Crear reservación · Modificar reservación · Consultar por ID</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="card">
+  <h2>Usuarios de prueba</h2>
+  <table>
+    <thead>
+      <tr><th>Email</th><th>Contraseña</th><th>Rol</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>admin@cine.com</td><td>admin123</td><td>admin</td></tr>
+      <tr><td>empleado@cine.com</td><td>empleado123</td><td>empleado</td></tr>
+      <tr><td>cliente@cine.com</td><td>cliente123</td><td>cliente</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<%- include('partials/footer') %>

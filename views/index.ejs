@@ -2,20 +2,40 @@
 
 <div class="stats-grid">
   <div class="stat-card">
-    <div class="value">Bienvenido</div>
-    <div class="label">Al Sistema CineVision</div>
+    <div class="value">Hola, <%= user.nombre %></div>
+    <div class="label">Rol: <%= user.rol %></div>
   </div>
 </div>
 
 <div class="card">
-  <h2>Sistema de Gestión</h2>
-  <p style="color: var(--text-muted); line-height: 1.6;">
-    Este es el panel principal de CineVision. Desde la barra lateral puedes navegar para visualizar y gestionar:
-    <br><br>
-    - <strong>Películas:</strong> Añadir, editar y eliminar películas del catálogo. <br>
-    - <strong>Salas:</strong> Gestionar las salas del cine y su capacidad. <br>
-    - <strong>Funciones:</strong> Asignar películas a salas en fechas determinadas. <br>
-    - <strong>Reservaciones:</strong> Controlar los tickets y reservaciones realizadas por los clientes.
+  <h2>Su panel</h2>
+  <% if (user.rol === 'admin') { %>
+    <p style="color: var(--text-muted); line-height: 1.6;">
+      Como <strong>admin</strong> gestiona el catálogo del cine:
+      <br><br>
+      - Crear, editar y eliminar <a href="/peliculas" style="color:var(--primary)">películas</a><br>
+      - Crear y editar <a href="/salas" style="color:var(--primary)">salas</a><br>
+      - Consultar la cartelera de <a href="/funciones" style="color:var(--primary)">funciones</a> (sin programarlas)
+    </p>
+  <% } else if (user.rol === 'empleado') { %>
+    <p style="color: var(--text-muted); line-height: 1.6;">
+      Como <strong>empleado</strong> opera la programación y el control de boletería:
+      <br><br>
+      - Consultar <a href="/peliculas" style="color:var(--primary)">películas</a> y <a href="/salas" style="color:var(--primary)">salas</a><br>
+      - Programar y ajustar <a href="/funciones" style="color:var(--primary)">funciones</a><br>
+      - Controlar <a href="/reservaciones" style="color:var(--primary)">reservaciones</a> (eliminar / últimas 5)
+    </p>
+  <% } else if (user.rol === 'cliente') { %>
+    <p style="color: var(--text-muted); line-height: 1.6;">
+      Como <strong>cliente</strong> puede reservar entradas:
+      <br><br>
+      - Ver el catálogo de <a href="/peliculas" style="color:var(--primary)">películas</a><br>
+      - Ver la cartelera de <a href="/funciones" style="color:var(--primary)">funciones</a><br>
+      - Crear y modificar sus <a href="/reservaciones" style="color:var(--primary)">reservaciones</a>
+    </p>
+  <% } %>
+  <p style="margin-top: 1rem; color: var(--text-muted);">
+    Detalle completo en <a href="/permisos" style="color: var(--primary);">Roles y permisos</a>.
   </p>
 </div>
 
