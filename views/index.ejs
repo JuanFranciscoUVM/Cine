@@ -15,23 +15,25 @@
       <br><br>
       - Crear, editar y eliminar <a href="/peliculas" style="color:var(--primary)">películas</a><br>
       - Crear y editar <a href="/salas" style="color:var(--primary)">salas</a><br>
-      - Consultar la cartelera de <a href="/funciones" style="color:var(--primary)">funciones</a> (sin programarlas)
+      - Gestionar el concesionario de <a href="/snacks" style="color:var(--primary)">snacks</a><br>
+      - Consultar <a href="/funciones" style="color:var(--primary)">funciones</a>, <a href="/tickets" style="color:var(--primary)">tickets</a> y <a href="/ventas-snacks" style="color:var(--primary)">ventas de snacks</a>
     </p>
   <% } else if (user.rol === 'empleado') { %>
     <p style="color: var(--text-muted); line-height: 1.6;">
-      Como <strong>empleado</strong> opera la programación y el control de boletería:
+      Como <strong>empleado</strong> opera programación, boletería y concesionario:
       <br><br>
-      - Consultar <a href="/peliculas" style="color:var(--primary)">películas</a> y <a href="/salas" style="color:var(--primary)">salas</a><br>
-      - Programar y ajustar <a href="/funciones" style="color:var(--primary)">funciones</a><br>
-      - Controlar <a href="/reservaciones" style="color:var(--primary)">reservaciones</a> (eliminar / últimas 5)
+      - Programar <a href="/funciones" style="color:var(--primary)">funciones</a> y controlar <a href="/reservaciones" style="color:var(--primary)">reservaciones</a><br>
+      - Emitir y gestionar <a href="/tickets" style="color:var(--primary)">tickets</a><br>
+      - Registrar y controlar <a href="/ventas-snacks" style="color:var(--primary)">ventas de snacks</a><br>
+      - Consultar <a href="/snacks" style="color:var(--primary)">snacks</a>, películas y salas
     </p>
   <% } else if (user.rol === 'cliente') { %>
     <p style="color: var(--text-muted); line-height: 1.6;">
-      Como <strong>cliente</strong> puede reservar entradas:
+      Como <strong>cliente</strong> puede reservar y comprar:
       <br><br>
-      - Ver el catálogo de <a href="/peliculas" style="color:var(--primary)">películas</a><br>
-      - Ver la cartelera de <a href="/funciones" style="color:var(--primary)">funciones</a><br>
-      - Crear y modificar sus <a href="/reservaciones" style="color:var(--primary)">reservaciones</a>
+      - Ver <a href="/peliculas" style="color:var(--primary)">películas</a> y <a href="/funciones" style="color:var(--primary)">funciones</a><br>
+      - Crear <a href="/reservaciones" style="color:var(--primary)">reservaciones</a> y <a href="/tickets" style="color:var(--primary)">tickets</a><br>
+      - Comprar en el concesionario (<a href="/snacks" style="color:var(--primary)">snacks</a> / <a href="/ventas-snacks" style="color:var(--primary)">ventas</a>)
     </p>
   <% } %>
   <p style="margin-top: 1rem; color: var(--text-muted);">
