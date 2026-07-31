@@ -35,6 +35,12 @@
             <a href="/reservaciones" class="<%= title === 'Reservaciones' ? 'active' : '' %>"><i class="fa-solid fa-ticket-simple"></i> Reservaciones</a>
           <% } %>
 
+          <% if (user.rol === 'admin' || user.rol === 'empleado' || user.rol === 'cliente') { %>
+            <a href="/tickets" class="<%= title === 'Tickets' ? 'active' : '' %>"><i class="fa-solid fa-ticket"></i> Tickets</a>
+            <a href="/snacks" class="<%= title === 'Snacks' ? 'active' : '' %>"><i class="fa-solid fa-cookie-bite"></i> Snacks</a>
+            <a href="/ventas-snacks" class="<%= title === 'Ventas de snacks' ? 'active' : '' %>"><i class="fa-solid fa-cash-register"></i> Ventas snacks</a>
+          <% } %>
+
           <a href="/permisos" class="<%= title === 'Roles y permisos' ? 'active' : '' %>"><i class="fa-solid fa-shield-halved"></i> Permisos</a>
           <a href="/logout"><i class="fa-solid fa-right-from-bracket"></i> Cerrar sesión</a>
         <% } else { %>
