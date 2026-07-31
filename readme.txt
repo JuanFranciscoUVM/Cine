@@ -42,8 +42,10 @@ B) El archivo .env y los *.sqlite están en .gitignore y NO deben subirse al rep
 
    El script de migración (database/migrate.js) con SQLite:
    - Crea el archivo database/cine.sqlite si no existe
-   - Crea tablas: usuarios, peliculas, salas, funciones, reservaciones, tickets
+   - Crea tablas: usuarios, peliculas, salas, funciones, reservaciones, tickets,
+     snacks, ventas_snacks
    - Inserta usuarios semilla con contraseñas cifradas (bcrypt)
+   - Inserta snacks de ejemplo (palomitas, nachos, refresco, combo)
    - Si existe data.json de la actividad anterior, importa películas/salas/etc.
 
    Usuarios de prueba tras migrar:
@@ -70,17 +72,17 @@ B) El archivo .env y los *.sqlite están en .gitignore y NO deben subirse al rep
 --------------------------------------------------------------------------------
 
    ADMIN — gestiona catálogo:
-   - Panel: Películas, Salas, Funciones (solo ver)
-   - POST/PUT/DELETE películas · POST/PUT salas
+   - Panel: Películas, Salas, Snacks (CRUD), Funciones/Tickets/Ventas (solo ver)
+   - POST/PUT/DELETE películas · POST/PUT salas · CRUD snacks
 
-   EMPLEADO — opera programación y boletería:
-   - Panel: Películas/Salas (ver), Funciones (gestionar), Reservaciones
-   - POST/PUT funciones · DELETE función/película · DELETE reservación · GET últimas
+   EMPLEADO — opera programación, boletería y concesionario:
+   - Panel: Funciones, Reservaciones, Tickets, Ventas snacks; catálogo en lectura
+   - POST/PUT funciones · DELETE reservación · CRUD tickets · PUT/DELETE ventas snacks
 
-   CLIENTE — reserva entradas:
-   - Panel: Películas/Funciones (ver), Reservaciones (crear/editar)
-   - POST/PUT reservaciones · GET reservación por id
-   - NO accede a /salas ni gestiona catálogo
+   CLIENTE — reserva entradas y compra snacks:
+   - Panel: Películas/Funciones (ver), Reservaciones, Tickets (crear), Ventas snacks (crear)
+   - POST/PUT reservaciones · POST tickets · POST ventas-snacks
+   - NO gestiona catálogo de películas/salas/snacks
 
    Si un rol no autorizado intenta una operación o página, recibe advertencia 403.
 
