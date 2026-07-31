@@ -12,7 +12,8 @@ const config = require('../config');
 const migraciones = [
   require('./migrations/001_estructura'),
   require('./migrations/002_usuarios_seed'),
-  require('./migrations/003_importar_json')
+  require('./migrations/003_importar_json'),
+  require('./migrations/004_snacks_ventas_tickets')
 ];
 
 function yaAplicada(id) {
