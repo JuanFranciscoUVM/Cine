@@ -75,9 +75,17 @@ function readData() {
         peliculas: sqlite.prepare('SELECT id, titulo, director, anio FROM peliculas').all(),
         salas: sqlite.prepare('SELECT id, nombre, capacidad FROM salas').all(),
         funciones: sqlite.prepare('SELECT id, peliculaId, salaId, fecha FROM funciones').all(),
-        tickets: sqlite.prepare('SELECT id, reservacionId, asiento FROM tickets').all(),
+        tickets: sqlite.prepare('SELECT id, reservacionId, asiento, precio FROM tickets').all(),
         reservaciones: sqlite
           .prepare('SELECT id, funcionId, cliente, createdAt FROM reservaciones')
+          .all(),
+        snacks: sqlite
+          .prepare('SELECT id, nombre, categoria, precio, stock FROM snacks')
+          .all(),
+        ventasSnacks: sqlite
+          .prepare(
+            'SELECT id, snackId, reservacionId, cliente, cantidad, total, createdAt FROM ventas_snacks'
+          )
           .all(),
         usuarios: sqlite
           .prepare('SELECT id, email, nombre, password, rol, createdAt FROM usuarios')
