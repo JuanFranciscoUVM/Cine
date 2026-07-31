@@ -1,0 +1,121 @@
+<%- include('partials/header') %>
+
+<% if (typeof user !== 'undefined' && user && (user.rol === 'empleado' || user.rol === 'cliente')) { %>
+<div class="card">
+  <h2>Registrar venta de snack</h2>
+  <p style="color:var(--text-muted);margin-bottom:1rem;">
+    Descuenta stock automáticamente.
+    <% if (user.rol === 'cliente') { %>Puede crear. Editar/eliminar: <strong>empleado</strong>.<% } %>
+  </p>
+  <form onsubmit="crear(event)">
+    <div class="form-group">
+      <label>Cliente</label>
+      <input type="text" id="cliente" required value="<%= user.nombre %>">
+    </div>
+    <div class="form-group">
+      <label>Snack</label>
+      <select id="snackId" required>
+        <% (snacks || []).forEach(function(s) { %>
+          <option value="<%= s.id %>"><%= s.nombre %> — $<%= Number(s.precio).toFixed(2) %> (stock <%= s.stock %>)</option>
+        <% }); %>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Cantidad</label>
+      <input type="number" id="cantidad" min="1" step="1" value="1" required>
+    </div>
+    <div class="form-group">
+      <label>Reservación (opcional)</label>
+      <select id="reservacionId">
+        <option value="">Sin asociar</option>
+        <% (reservaciones || []).forEach(function(r) { %>
+          <option value="<%= r.id %>"><%= r.cliente %> (<%= r.id %>)</option>
+        <% }); %>
+      </select>
+    </div>
+    <button type="submit" class="btn"><i class="fa-solid fa-cart-shopping"></i> Registrar venta</button>
+  </form>
+</div>
+<% } else { %>
+<div class="card">
+  <p style="color: var(--text-muted);">Solo lectura. Crear ventas requiere rol <strong>empleado</strong> o <strong>cliente</strong>.</p>
+</div>
+<% } %>
+
+<div class="card">
+  <h2>Historial de ventas</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Cliente</th>
+        <th>Snack</th>
+        <th>Cantidad</th>
+        <th>Total</th>
+        <th>Reservación</th>
+        <th>Fecha</th>
+        <% if (typeof user !== 'undefined' && user && user.rol === 'empleado') { %>
+        <th>Acciones</th>
+        <% } %>
+      </tr>
+    </thead>
+    <tbody>
+      <% (ventas || []).forEach(function(v) { %>
+        <tr>
+          <td><%= v.id %></td>
+          <td><strong><%= v.cliente %></strong></td>
+          <td><%= v.snackNombre %></td>
+          <td><%= v.cantidad %></td>
+          <td>$<%= Number(v.total).toFixed(2) %></td>
+          <td><%= v.reservacionId || '—' %></td>
+          <td><%= v.createdAt && !isNaN(new Date(v.createdAt)) ? new Date(v.createdAt).toLocaleString() : v.createdAt %></td>
+          <% if (typeof user !== 'undefined' && user && user.rol === 'empleado') { %>
+          <td>
+            <button class="btn" onclick="editar('<%= v.id %>', '<%= v.cliente %>', '<%= v.cantidad %>')"><i class="fa-solid fa-pen"></i></button>
+            <button class="btn btn-danger" onclick="eliminar('<%= v.id %>')"><i class="fa-solid fa-trash"></i></button>
+          </td>
+          <% } %>
+        </tr>
+      <% }); %>
+    </tbody>
+  </table>
+</div>
+
+<script>
+async function crear(e) {
+  e.preventDefault();
+  const reservacionId = document.getElementById('reservacionId').value;
+  const body = {
+    cliente: document.getElementById('cliente').value,
+    snackId: document.getElementById('snackId').value,
+    cantidad: parseInt(document.getElementById('cantidad').value, 10)
+  };
+  if (reservacionId) body.reservacionId = reservacionId;
+  await apiRequest('/api/ventas-snacks', {
+    method: 'POST',
+    body: JSON.stringify(body)
+  });
+}
+
+async function editar(id, cliente, cantidad) {
+  const nuevoCliente = prompt('Cliente:', cliente);
+  if (!nuevoCliente) return;
+  const nuevaCantidad = prompt('Cantidad:', cantidad);
+  if (nuevaCantidad == null || nuevaCantidad === '') return;
+  await apiRequest('/api/ventas-snacks/' + id, {
+    method: 'PUT',
+    body: JSON.stringify({
+      cliente: nuevoCliente,
+      cantidad: parseInt(nuevaCantidad, 10)
+    })
+  });
+}
+
+async function eliminar(id) {
+  if (confirm('¿Eliminar esta venta? Se devolverá el stock.')) {
+    await apiRequest('/api/ventas-snacks/' + id, { method: 'DELETE' });
+  }
+}
+</script>
+
+<%- include('partials/footer') %>

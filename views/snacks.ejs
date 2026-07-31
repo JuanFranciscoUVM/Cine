@@ -1,0 +1,115 @@
+<%- include('partials/header') %>
+
+<% if (typeof user !== 'undefined' && user && user.rol === 'admin') { %>
+<div class="card">
+  <h2>Registrar Snack</h2>
+  <p style="color:var(--text-muted);margin-bottom:1rem;">Catálogo del concesionario. Solo rol <strong>admin</strong>.</p>
+  <form onsubmit="crear(event)">
+    <div class="form-group">
+      <label>Nombre</label>
+      <input type="text" id="nombre" required placeholder="Ej. Palomitas grandes">
+    </div>
+    <div class="form-group">
+      <label>Categoría</label>
+      <select id="categoria" required>
+        <option value="comida">comida</option>
+        <option value="bebida">bebida</option>
+        <option value="combo">combo</option>
+        <option value="dulce">dulce</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Precio</label>
+      <input type="number" id="precio" step="0.01" min="0" required>
+    </div>
+    <div class="form-group">
+      <label>Stock</label>
+      <input type="number" id="stock" min="0" step="1" value="50" required>
+    </div>
+    <button type="submit" class="btn"><i class="fa-solid fa-plus"></i> Añadir snack</button>
+  </form>
+</div>
+<% } else { %>
+<div class="card">
+  <p style="color: var(--text-muted);">Solo lectura. Crear / editar / eliminar snacks requiere rol <strong>admin</strong>.</p>
+</div>
+<% } %>
+
+<div class="card">
+  <h2>Concesionario</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Nombre</th>
+        <th>Categoría</th>
+        <th>Precio</th>
+        <th>Stock</th>
+        <% if (typeof user !== 'undefined' && user && user.rol === 'admin') { %>
+        <th>Acciones</th>
+        <% } %>
+      </tr>
+    </thead>
+    <tbody>
+      <% (snacks || []).forEach(function(s) { %>
+        <tr>
+          <td><%= s.id %></td>
+          <td><strong><%= s.nombre %></strong></td>
+          <td><%= s.categoria %></td>
+          <td>$<%= Number(s.precio).toFixed(2) %></td>
+          <td><%= s.stock %></td>
+          <% if (typeof user !== 'undefined' && user && user.rol === 'admin') { %>
+          <td>
+            <button class="btn" onclick="editar('<%= s.id %>', '<%= s.nombre %>', '<%= s.categoria %>', '<%= s.precio %>', '<%= s.stock %>')"><i class="fa-solid fa-pen"></i></button>
+            <button class="btn btn-danger" onclick="eliminar('<%= s.id %>')"><i class="fa-solid fa-trash"></i></button>
+          </td>
+          <% } %>
+        </tr>
+      <% }); %>
+    </tbody>
+  </table>
+</div>
+
+<script>
+async function crear(e) {
+  e.preventDefault();
+  const body = {
+    nombre: document.getElementById('nombre').value,
+    categoria: document.getElementById('categoria').value,
+    precio: parseFloat(document.getElementById('precio').value),
+    stock: parseInt(document.getElementById('stock').value, 10)
+  };
+  await apiRequest('/api/snacks', {
+    method: 'POST',
+    body: JSON.stringify(body)
+  });
+}
+
+async function editar(id, nombre, categoria, precio, stock) {
+  const nuevoNombre = prompt('Nombre:', nombre);
+  if (!nuevoNombre) return;
+  const nuevaCategoria = prompt('Categoría (comida|bebida|combo|dulce):', categoria);
+  if (!nuevaCategoria) return;
+  const nuevoPrecio = prompt('Precio:', precio);
+  if (nuevoPrecio == null || nuevoPrecio === '') return;
+  const nuevoStock = prompt('Stock:', stock);
+  if (nuevoStock == null || nuevoStock === '') return;
+  await apiRequest('/api/snacks/' + id, {
+    method: 'PUT',
+    body: JSON.stringify({
+      nombre: nuevoNombre,
+      categoria: nuevaCategoria,
+      precio: parseFloat(nuevoPrecio),
+      stock: parseInt(nuevoStock, 10)
+    })
+  });
+}
+
+async function eliminar(id) {
+  if (confirm('¿Eliminar este snack?')) {
+    await apiRequest('/api/snacks/' + id, { method: 'DELETE' });
+  }
+}
+</script>
+
+<%- include('partials/footer') %>

@@ -1,0 +1,110 @@
+<%- include('partials/header') %>
+
+<% if (typeof user !== 'undefined' && user && (user.rol === 'empleado' || user.rol === 'cliente')) { %>
+<div class="card">
+  <h2>Emitir Ticket</h2>
+  <p style="color:var(--text-muted);margin-bottom:1rem;">
+    Asigna un asiento a una reservación.
+    <% if (user.rol === 'cliente') { %>Puede crear. Editar/eliminar: <strong>empleado</strong>.<% } %>
+  </p>
+  <form onsubmit="crear(event)">
+    <div class="form-group">
+      <label>Reservación</label>
+      <select id="reservacionId" required>
+        <% if (!reservaciones || reservaciones.length === 0) { %>
+          <option value="">No hay reservaciones</option>
+        <% } %>
+        <% (reservaciones || []).forEach(function(r) { %>
+          <option value="<%= r.id %>"><%= r.cliente %> (<%= r.id %>)</option>
+        <% }); %>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Asiento</label>
+      <input type="text" id="asiento" placeholder="Ej. A12" required>
+    </div>
+    <div class="form-group">
+      <label>Precio</label>
+      <input type="number" id="precio" step="0.01" min="0" value="12.00" required>
+    </div>
+    <button type="submit" class="btn"><i class="fa-solid fa-ticket"></i> Crear ticket</button>
+  </form>
+</div>
+<% } else { %>
+<div class="card">
+  <p style="color: var(--text-muted);">Solo lectura. Crear tickets requiere rol <strong>empleado</strong> o <strong>cliente</strong>.</p>
+</div>
+<% } %>
+
+<div class="card">
+  <h2>Listado de Tickets</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Cliente</th>
+        <th>Reservación</th>
+        <th>Asiento</th>
+        <th>Precio</th>
+        <% if (typeof user !== 'undefined' && user && user.rol === 'empleado') { %>
+        <th>Acciones</th>
+        <% } %>
+      </tr>
+    </thead>
+    <tbody>
+      <% (tickets || []).forEach(function(t) { %>
+        <tr>
+          <td><%= t.id %></td>
+          <td><strong><%= t.cliente %></strong></td>
+          <td><%= t.reservacionId %></td>
+          <td><%= t.asiento %></td>
+          <td>$<%= Number(t.precio || 0).toFixed(2) %></td>
+          <% if (typeof user !== 'undefined' && user && user.rol === 'empleado') { %>
+          <td>
+            <button class="btn" onclick="editar('<%= t.id %>', '<%= t.reservacionId %>', '<%= t.asiento %>', '<%= t.precio %>')"><i class="fa-solid fa-pen"></i></button>
+            <button class="btn btn-danger" onclick="eliminar('<%= t.id %>')"><i class="fa-solid fa-trash"></i></button>
+          </td>
+          <% } %>
+        </tr>
+      <% }); %>
+    </tbody>
+  </table>
+</div>
+
+<script>
+async function crear(e) {
+  e.preventDefault();
+  const body = {
+    reservacionId: document.getElementById('reservacionId').value,
+    asiento: document.getElementById('asiento').value,
+    precio: parseFloat(document.getElementById('precio').value)
+  };
+  await apiRequest('/api/tickets', {
+    method: 'POST',
+    body: JSON.stringify(body)
+  });
+}
+
+async function editar(id, reservacionId, asiento, precio) {
+  const nuevoAsiento = prompt('Nuevo asiento:', asiento);
+  if (!nuevoAsiento) return;
+  const nuevoPrecio = prompt('Nuevo precio:', precio);
+  if (nuevoPrecio == null || nuevoPrecio === '') return;
+  await apiRequest('/api/tickets/' + id, {
+    method: 'PUT',
+    body: JSON.stringify({
+      reservacionId: reservacionId,
+      asiento: nuevoAsiento,
+      precio: parseFloat(nuevoPrecio)
+    })
+  });
+}
+
+async function eliminar(id) {
+  if (confirm('¿Eliminar este ticket?')) {
+    await apiRequest('/api/tickets/' + id, { method: 'DELETE' });
+  }
+}
+</script>
+
+<%- include('partials/footer') %>
