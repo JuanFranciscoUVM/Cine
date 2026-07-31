@@ -5,6 +5,9 @@ const peliculasController = require('../controllers/peliculasController');
 const salasController = require('../controllers/salasController');
 const funcionesController = require('../controllers/funcionesController');
 const reservacionesController = require('../controllers/reservacionesController');
+const ticketsController = require('../controllers/ticketsController');
+const snacksController = require('../controllers/snacksController');
+const ventasSnacksController = require('../controllers/ventasSnacksController');
 
 function responder(res, result) {
   if (result.data !== undefined) {
@@ -302,6 +305,241 @@ router.get('/reservaciones', autorizarRoles('cliente', 'empleado'), function (re
   return new Promise(function (resolve) {
     reservacionesController
       .listar()
+      .then(function (result) {
+        responder(res, result);
+        resolve();
+      })
+      .catch(function (err) {
+        manejarError(res, err);
+        resolve();
+      });
+  });
+});
+
+/* ---------- TICKETS (boletos por asiento) ---------- */
+
+router.get('/tickets', autorizarRoles('admin', 'empleado', 'cliente'), function (req, res) {
+  return new Promise(function (resolve) {
+    ticketsController
+      .listar()
+      .then(function (result) {
+        responder(res, result);
+        resolve();
+      })
+      .catch(function (err) {
+        manejarError(res, err);
+        resolve();
+      });
+  });
+});
+
+router.get('/tickets/:id', autorizarRoles('admin', 'empleado', 'cliente'), function (req, res) {
+  return new Promise(function (resolve) {
+    ticketsController
+      .obtenerPorId(req.params.id)
+      .then(function (result) {
+        responder(res, result);
+        resolve();
+      })
+      .catch(function (err) {
+        manejarError(res, err);
+        resolve();
+      });
+  });
+});
+
+router.post('/tickets', autorizarRoles('empleado', 'cliente'), function (req, res) {
+  return new Promise(function (resolve) {
+    ticketsController
+      .crear(req.body)
+      .then(function (result) {
+        responder(res, result);
+        resolve();
+      })
+      .catch(function (err) {
+        manejarError(res, err);
+        resolve();
+      });
+  });
+});
+
+router.put('/tickets/:id', autorizarRoles('empleado'), function (req, res) {
+  return new Promise(function (resolve) {
+    ticketsController
+      .actualizar(req.params.id, req.body)
+      .then(function (result) {
+        responder(res, result);
+        resolve();
+      })
+      .catch(function (err) {
+        manejarError(res, err);
+        resolve();
+      });
+  });
+});
+
+router.delete('/tickets/:id', autorizarRoles('empleado'), function (req, res) {
+  return new Promise(function (resolve) {
+    ticketsController
+      .eliminar(req.params.id)
+      .then(function (result) {
+        responder(res, result);
+        resolve();
+      })
+      .catch(function (err) {
+        manejarError(res, err);
+        resolve();
+      });
+  });
+});
+
+/* ---------- SNACKS (concesionario) ---------- */
+
+router.get('/snacks', autorizarRoles('admin', 'empleado', 'cliente'), function (req, res) {
+  return new Promise(function (resolve) {
+    snacksController
+      .listar()
+      .then(function (result) {
+        responder(res, result);
+        resolve();
+      })
+      .catch(function (err) {
+        manejarError(res, err);
+        resolve();
+      });
+  });
+});
+
+router.get('/snacks/:id', autorizarRoles('admin', 'empleado', 'cliente'), function (req, res) {
+  return new Promise(function (resolve) {
+    snacksController
+      .obtenerPorId(req.params.id)
+      .then(function (result) {
+        responder(res, result);
+        resolve();
+      })
+      .catch(function (err) {
+        manejarError(res, err);
+        resolve();
+      });
+  });
+});
+
+router.post('/snacks', autorizarRoles('admin'), function (req, res) {
+  return new Promise(function (resolve) {
+    snacksController
+      .crear(req.body)
+      .then(function (result) {
+        responder(res, result);
+        resolve();
+      })
+      .catch(function (err) {
+        manejarError(res, err);
+        resolve();
+      });
+  });
+});
+
+router.put('/snacks/:id', autorizarRoles('admin'), function (req, res) {
+  return new Promise(function (resolve) {
+    snacksController
+      .actualizar(req.params.id, req.body)
+      .then(function (result) {
+        responder(res, result);
+        resolve();
+      })
+      .catch(function (err) {
+        manejarError(res, err);
+        resolve();
+      });
+  });
+});
+
+router.delete('/snacks/:id', autorizarRoles('admin'), function (req, res) {
+  return new Promise(function (resolve) {
+    snacksController
+      .eliminar(req.params.id)
+      .then(function (result) {
+        responder(res, result);
+        resolve();
+      })
+      .catch(function (err) {
+        manejarError(res, err);
+        resolve();
+      });
+  });
+});
+
+/* ---------- VENTAS DE SNACKS ---------- */
+
+router.get('/ventas-snacks', autorizarRoles('admin', 'empleado', 'cliente'), function (req, res) {
+  return new Promise(function (resolve) {
+    ventasSnacksController
+      .listar()
+      .then(function (result) {
+        responder(res, result);
+        resolve();
+      })
+      .catch(function (err) {
+        manejarError(res, err);
+        resolve();
+      });
+  });
+});
+
+router.get(
+  '/ventas-snacks/:id',
+  autorizarRoles('admin', 'empleado', 'cliente'),
+  function (req, res) {
+    return new Promise(function (resolve) {
+      ventasSnacksController
+        .obtenerPorId(req.params.id)
+        .then(function (result) {
+          responder(res, result);
+          resolve();
+        })
+        .catch(function (err) {
+          manejarError(res, err);
+          resolve();
+        });
+    });
+  }
+);
+
+router.post('/ventas-snacks', autorizarRoles('empleado', 'cliente'), function (req, res) {
+  return new Promise(function (resolve) {
+    ventasSnacksController
+      .crear(req.body)
+      .then(function (result) {
+        responder(res, result);
+        resolve();
+      })
+      .catch(function (err) {
+        manejarError(res, err);
+        resolve();
+      });
+  });
+});
+
+router.put('/ventas-snacks/:id', autorizarRoles('empleado'), function (req, res) {
+  return new Promise(function (resolve) {
+    ventasSnacksController
+      .actualizar(req.params.id, req.body)
+      .then(function (result) {
+        responder(res, result);
+        resolve();
+      })
+      .catch(function (err) {
+        manejarError(res, err);
+        resolve();
+      });
+  });
+});
+
+router.delete('/ventas-snacks/:id', autorizarRoles('empleado'), function (req, res) {
+  return new Promise(function (resolve) {
+    ventasSnacksController
+      .eliminar(req.params.id)
       .then(function (result) {
         responder(res, result);
         resolve();
