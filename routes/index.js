@@ -251,4 +251,104 @@ router.get(
   }
 );
 
+/* tickets: empleado gestiona | cliente asigna asientos | admin consulta */
+router.get(
+  '/tickets',
+  verificarTokenVista,
+  autorizarRolesVista('admin', 'empleado', 'cliente'),
+  function (req, res) {
+    return new Promise(function (resolve) {
+      db.readData()
+        .then(function (data) {
+          const tickets = data.tickets.map(function (t) {
+            const reservacion =
+              data.reservaciones.find(function (r) {
+                return r.id === t.reservacionId;
+              }) || { cliente: '—' };
+            return Object.assign({}, t, { cliente: reservacion.cliente });
+          });
+
+          res.render('tickets', {
+            title: 'Tickets',
+            user: req.user,
+            tickets: tickets,
+            reservaciones: data.reservaciones
+          });
+          resolve();
+        })
+        .catch(function (err) {
+          res.status(500).render('error', {
+            message: 'Error al cargar tickets',
+            error: { status: 500, stack: err.message }
+          });
+          resolve();
+        });
+    });
+  }
+);
+
+/* snacks: admin CRUD | empleado/cliente consulta */
+router.get(
+  '/snacks',
+  verificarTokenVista,
+  autorizarRolesVista('admin', 'empleado', 'cliente'),
+  function (req, res) {
+    return new Promise(function (resolve) {
+      db.readData()
+        .then(function (data) {
+          res.render('snacks', {
+            title: 'Snacks',
+            user: req.user,
+            snacks: data.snacks
+          });
+          resolve();
+        })
+        .catch(function (err) {
+          res.status(500).render('error', {
+            message: 'Error al cargar snacks',
+            error: { status: 500, stack: err.message }
+          });
+          resolve();
+        });
+    });
+  }
+);
+
+/* ventas snacks: cliente/empleado crean | empleado edita/elimina */
+router.get(
+  '/ventas-snacks',
+  verificarTokenVista,
+  autorizarRolesVista('admin', 'empleado', 'cliente'),
+  function (req, res) {
+    return new Promise(function (resolve) {
+      db.readData()
+        .then(function (data) {
+          const ventas = data.ventasSnacks.map(function (v) {
+            const snack =
+              data.snacks.find(function (s) {
+                return s.id === v.snackId;
+              }) || { nombre: '—' };
+            return Object.assign({}, v, { snackNombre: snack.nombre });
+          });
+
+          res.render('ventas-snacks', {
+            title: 'Ventas de snacks',
+            user: req.user,
+            ventas: ventas,
+            snacks: data.snacks,
+            reservaciones: data.reservaciones
+          });
+          resolve();
+        })
+        .catch(function (err) {
+          res.status(500).render('error', {
+            message: 'Error al cargar ventas de snacks',
+            error: { status: 500, stack: err.message }
+          });
+          resolve();
+        });
+    });
+  }
+);
+
 module.exports = router;
